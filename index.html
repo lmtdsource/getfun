@@ -1,1 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mini Arcade Hub</title>
+<style>
+  body {
+    font-family: 'Comic Sans MS', cursive, sans-serif;
+    background: linear-gradient(120deg, #ffecd2, #fcb69f);
+    margin: 0;
+    padding: 0;
+  }
+  h1 {
+    text-align: center;
+    margin: 20px 0;
+    color: #333;
+    text-shadow: 2px 2px #fff;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    padding: 20px;
+  }
+  .card {
+    background: #fff3;
+    border-radius: 15px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    padding: 20px;
+    transition: transform 0.3s, box-shadow 0.3s;
+  }
+  .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+  }
+  button {
+    padding: 10px 20px;
+    margin: 5px;
+    background: linear-gradient(45deg, #f9d423, #ff4e50);
+    border: none;
+    border-radius: 10px;
+    color: white;
+    cursor: pointer;
+    transition: transform 0.2s;
+  }
+  button:hover {
+    transform: scale(1.1);
+  }
+  .tictactoe-board {
+    display: grid;
+    grid-template-columns: repeat(3, 60px);
+    grid-gap: 5px;
+    justify-content: center;
+    margin-bottom: 10px;
+  }
+  .cell {
+    width: 60px;
+    height: 60px;
+    background: #fff8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: background 0.2s;
+  }
+  .cell:hover {
+    background: #ffd;
+  }
+  .memory-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 60px);
+    grid-gap: 10px;
+    justify-content: center;
+    margin-bottom: 10px;
+  }
+  .memory-card {
+    width: 60px;
+    height: 60px;
+    background: #fff8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: transform 0.3s, background 0.3s;
+    perspective: 1000px;
+  }
+  .memory-card.flipped {
+    transform: rotateY(180deg);
+    background: #ffd;
+  }
+  .memory-card span {
+    transform: rotateY(180deg);
+    display: none;
+  }
+  .memory-card.flipped span {
+    display: block;
+  }
+  .rps-buttons button {
+    font-size: 16px;
+  }
+  .daily-link {
+    text-align: center;
+  }
+  .instructions {
+    font-size: 14px;
+    margin-bottom: 10px;
+    color: #555;
+  }
+</style>
+</head>
+<body>
+<h1>🎮 Mini Arcade Hub 🎮</h1>
+<div class="grid">
+
+  <!-- Tic-Tac-Toe -->
+  <div class="card" id="tictactoe-card">
+    <h2>Tic-Tac-Toe</h2>
+    <div class="instructions">Click a cell to place your X. Play against bot or turn it off.</div>
+    <div class="tictactoe-board" id="tictactoe-board"></div>
+    <button id="ttt-restart">Restart</button>
+    <button id="ttt-bot-toggle">Bot: ON</button>
+    <div id="ttt-result"></div>
+  </div>
+
+  <!-- Memory Match -->
+  <div class="card" id="memory-card">
+    <h2>Memory Match</h2>
+    <div class="instructions">Flip cards to find matching pairs. Match all to win!</div>
+    <div class="memory-grid" id="memory-grid"></div>
+    <button id="memory-restart">Restart</button>
+    <div id="memory-result"></div>
+  </div>
+
+  <!-- Rock Paper Scissors -->
+  <div class="card" id="rps-card">
+    <h2>Rock Paper Scissors</h2>
+    <div class="instructions">Choose your move and beat the CPU!</div>
+    <div class="rps-buttons">
+      <button data-move="Rock">Rock</button>
+      <button data-move="Paper">Paper</button>
+      <button data-move="Scissors">Scissors</button>
+    </div>
+    <div id="rps-result"></div>
+  </div>
+
+  <!-- Daily Link -->
+  <div class="card daily-link">
+    <h2>Daily Site</h2>
+    <div class="instructions">Click the button to visit today's featured site!</div>
+    <button id="daily-button">Visit!</button>
+  </div>
+
+</div>
+
+<script>
+/* Tic-Tac-Toe */
+let tttBoard = Array(9).fill('');
+let tttBotOn = true;
+const tttCells = [];
+const tttBoardDiv = document.getElementById('tictactoe-board');
+const tttResult = document.getElementById('ttt-result');
+
+function tttInit() {
+  tttBoardDiv.innerHTML = '';
+  tttBoard.fill('');
+  tttResult.textContent = '';
+  for(let i=0;i<9;i++){
+    const cell = document.createElement('div');
+    cell.classList.add('cell');
+    cell.addEventListener('click',()=>tttClick(i));
+    tttBoardDiv.appendChild(cell);
+    tttCells[i]=cell;
+  }
+}
+function tttClick(i){
+  if(tttBoard[i]!=='' || tttResult.textContent) return;
+  tttBoard[i]='X';
+  tttCells[i].textContent='X';
+  if(tttCheckWin('X')) return tttResult.textContent='You Win!';
+  if(tttBoard.includes('') && tttBotOn){
+    tttBotMove();
+  } else if(!tttBoard.includes('')){
+    tttResult.textContent='Draw!';
+  }
+}
+function tttBotMove(){
+  let move = tttFindBestMove('O')||tttFindBestMove('X')||tttBoard.findIndex(c=>c==='');
+  tttBoard[move]='O';
+  tttCells[move].textContent='O';
+  if(tttCheckWin('O')) tttResult.textContent='Bot Wins!';
+  else if(!tttBoard.includes('')) tttResult.textContent='Draw!';
+}
+function tttFindBestMove(player){
+  for(let i=0;i<9;i++){
+    if(tttBoard[i]===''){
+      tttBoard[i]=player;
+      if(tttCheckWin(player)){ tttBoard[i]=''; return i;}
+      tttBoard[i]='';
+    }
+  }
+  return null;
+}
+function tttCheckWin(p){
+  const wins=[[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+  return wins.some(w=>w.every(i=>tttBoard[i]===p));
+}
+document.getElementById('ttt-restart').addEventListener('click', tttInit);
+document.getElementById('ttt-bot-toggle').addEventListener('click', ()=>{
+  tttBotOn=!tttBotOn;
+  document.getElementById('ttt-bot-toggle').textContent='Bot: '+(tttBotOn?'ON':'OFF');
+});
+tttInit();
+
+/* Memory Match */
+const memoryEmojis = ['🍎','🍌','🍇','🍒','🍉','🥝','🍑','🍍'];
+let memoryGrid = [];
+let flipped = [];
+let matched = [];
+const memoryGridDiv = document.getElementById('memory-grid');
+const memoryResult = document.getElementById('memory-result');
+
+function memoryInit(){
+  memoryGridDiv.innerHTML='';
+  memoryGrid=[...memoryEmojis,...memoryEmojis].sort(()=>Math.random()-0.5);
+  flipped=[]; matched=[];
+  memoryResult.textContent='';
+  memoryGrid.forEach((emoji,i)=>{
+    const card=document.createElement('div');
+    card.classList.add('memory-card');
+    card.innerHTML='<span>'+emoji+'</span>';
+    card.addEventListener('click',()=>memoryClick(i,card));
+    memoryGridDiv.appendChild(card);
+  });
+}
+function memoryClick(i,card){
+  if(flipped.includes(i) || matched.includes(i)) return;
+  flipped.push(i);
+  card.classList.add('flipped');
+  if(flipped.length===2){
+    const [a,b]=flipped;
+    if(memoryGrid[a]===memoryGrid[b]){
+      matched.push(a,b);
+      flipped=[];
+      if(matched.length===memoryGrid.length) memoryResult.textContent='You Win!';
+    } else {
+      setTimeout(()=>{ 
+        [a,b].forEach(j=>memoryGridDiv.children[j].classList.remove('flipped'));
+        flipped=[];
+      },800);
+    }
+  }
+}
+document.getElementById('memory-restart').addEventListener('click', memoryInit);
+memoryInit();
+
+/* Rock Paper Scissors */
+const rpsButtons=document.querySelectorAll('#rps-card .rps-buttons button');
+const rpsResult=document.getElementById('rps-result');
+rpsButtons.forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    const player=btn.getAttribute('data-move');
+    const moves=['Rock','Paper','Scissors'];
+    const cpu=moves[Math.floor(Math.random()*3)];
+    let result='';
+    if(player===cpu) result='Draw!';
+    else if((player==='Rock'&&cpu==='Scissors')||(player==='Paper'&&cpu==='Rock')||(player==='Scissors'&&cpu==='Paper')) result='You Win!';
+    else result='CPU Wins!';
+    rpsResult.textContent=`You: ${player} | CPU: ${cpu} => ${result}`;
+  });
+});
+
+/* Daily Link */
+const dailyLinks=[
+  'https://example.com/1',
+  'https://example.com/2',
+  'https://example.com/3',
+  'https://example.com/4',
+  'https://example.com/5',
+  'https://example.com/6',
+  'https://example.com/7'
+];
+document.getElementById('daily-button').addEventListener('click',()=>{
+  const day=new Date().getDay();
+  window.open(dailyLinks[day],'_blank');
+});
+</script>
+</body>
+</html>
 
