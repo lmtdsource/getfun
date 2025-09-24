@@ -111,6 +111,31 @@
     margin-bottom: 10px;
     color: #555;
   }
+
+  /* Animated Daily Button */
+  .animated-button {
+    display: inline-block;
+    padding: 15px 25px;
+    margin-top: 10px;
+    background: linear-gradient(45deg, #f9d423, #ff4e50);
+    color: white;
+    font-weight: bold;
+    border-radius: 12px;
+    cursor: pointer;
+    text-align: center;
+    font-size: 16px;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    animation: pulse 1.5s infinite;
+    transition: transform 0.2s;
+  }
+  .animated-button:hover {
+    transform: scale(1.1);
+  }
+  @keyframes pulse {
+    0% { box-shadow: 0 0 5px #ff4e50, 0 0 10px #f9d423; transform: scale(1); }
+    50% { box-shadow: 0 0 20px #ff4e50, 0 0 30px #f9d423; transform: scale(1.05); }
+    100% { box-shadow: 0 0 5px #ff4e50, 0 0 10px #f9d423; transform: scale(1); }
+  }
 </style>
 </head>
 <body>
@@ -152,7 +177,7 @@
   <div class="card daily-link">
     <h2>Daily Site</h2>
     <div class="instructions">Click the button to visit today's featured site!</div>
-    <button id="daily-button">Visit!</button>
+    <div class="animated-button" id="daily-button">▶ Loading...</div>
   </div>
 
 </div>
@@ -274,21 +299,37 @@ rpsButtons.forEach(btn=>{
   });
 });
 
-/* Daily Link */
-const dailyLinks=[
-  'https://example.com/1',
-  'https://example.com/2',
-  'https://example.com/3',
-  'https://example.com/4',
-  'https://example.com/5',
-  'https://example.com/6',
-  'https://example.com/7'
+/* Daily Link Real-Time Cycling */
+const dailyLinks = [
+  {url:'https://xhamster.desi/videos/see-brazilian-woman-masturbating-and-giving-a-close-up-of-her-juicy-pussy-xhvVc4D?utm_source=ext_shared&utm_medium=referral&utm_campaign=link', name:'Site 1'},
+  {url:'https://xhamster.desi/videos/breaking-into-my-pussy-with-a-long-thick-cucumber-xhipiTp?utm_source=ext_shared&utm_medium=referral&utm_campaign=link', name:'Site 2'},
+  {url:'https://xhamster.desi/videos/instead-of-showing-me-cartoons-you-broke-my-virginity-with-your-old-splattered-with-paint-dick-xhFNHvZ?utm_source=ext_shared&utm_medium=referral&utm_campaign=link', name:'Site 3'},
+  {url:'https://xhamster.desi/videos/kitty-wants-you-to-see-how-she-squirts-hard-xhqwIxU?utm_source=ext_shared&utm_medium=referral&utm_campaign=link', name:'Site 4'},
+  {url:'https://xhamster.desi/videos/18-year-old-girl-fingering-wet-pussy-desi-indian-orgasm-masturbation-xhiLHUk', name:'Site 5'},
+  {url:'https://xhamster.desi/videos/desi-village-girl-tight-pussy-first-time-xxx-video-desi-hot-beautiful-tgirl-outdoor-sex-xhNthQD?utm_source=ext_shared&utm_medium=referral&utm_campaign=link', name:'Site 6'},
+  {url:'https://xhamster.desi/videos/the-obedient-stepdaughter-do-blowjob-to-stepdaddy-xh3Hfm4?utm_source=ext_shared&utm_medium=referral&utm_campaign=link', name:'Site 7'}
 ];
-document.getElementById('daily-button').addEventListener('click',()=>{
-  const day=new Date().getDay();
-  window.open(dailyLinks[day],'_blank');
-});
+
+const dailyButton = document.getElementById('daily-button');
+
+function updateDailySite(){
+  const today = new Date();
+  const dayIndex = today.getDay(); // 0=Sunday ... 6=Saturday
+  const site = dailyLinks[dayIndex % dailyLinks.length]; // repeat weekly
+  dailyButton.textContent = `▶ Click Here - Watch ${site.name}!`;
+  dailyButton.onclick = () => window.open(site.url, '_blank');
+}
+
+// Initialize daily site
+updateDailySite();
+
+// Optional: update at midnight automatically
+setInterval(() => {
+  const now = new Date();
+  if(now.getHours() === 0 && now.getMinutes() === 0){
+    updateDailySite();
+  }
+}, 60000); // check every minute
 </script>
 </body>
 </html>
-
